@@ -120,4 +120,23 @@ public class EmployeeController {
         employeeService.page(pageInfo, queryWrapper);
         return R.success(pageInfo);
     }
+
+    /**
+     * 根据id修改员工信息
+     *
+     * @param employee
+     * @return
+     */
+    @PutMapping
+    public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
+        log.info("修改员工信息{}", employee.toString());
+        // 注意这里需要修改更新时间，和更新人
+        employee.setUpdateTime(LocalDateTime.now());
+        // 这个方法默认会返回一个Object的类型， 这里需要强转为Long
+        Long empId = (Long) request.getSession().getAttribute("employee");
+        employee.setUpdateUser(empId);
+        // 这里直接调用updateById方法，mybatis plus会根据id自动更新
+        employeeService.updateById(employee);
+        return R.success("修改员工成功");
+    }
 }
