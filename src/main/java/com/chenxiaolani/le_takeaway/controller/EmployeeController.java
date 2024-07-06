@@ -1,16 +1,15 @@
 package com.chenxiaolani.le_takeaway.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chenxiaolani.le_takeaway.common.R;
 import com.chenxiaolani.le_takeaway.entity.Employee;
 import com.chenxiaolani.le_takeaway.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -94,5 +93,31 @@ public class EmployeeController {
         employeeService.save(employee);
 
         return R.success("新增员工成功");
+    }
+
+    /**
+     * 员工分页查询, Page类是mybatis plus提供的分页查询类
+     *
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
+    @GetMapping("/page")
+    public R<Page> page(int page, int pageSize, String name) {
+        log.info("分页查询员工信息，page={},pageSize={},name={}", page, pageSize, name);
+
+        // 构造分页查询条件
+        Page pageInfo = new Page(page, pageSize);
+
+        // 构造条件查询条件
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        // like 就是模糊查询，相似的还有其他方法对应sql不同的查询方式
+        queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
+        // 构造排序
+        queryWrapper.orderByDesc(Employee::getCreateTime);
+        // 执行查询
+        employeeService.page(pageInfo, queryWrapper);
+        return R.success(pageInfo);
     }
 }
