@@ -108,7 +108,7 @@ public class EmployeeController {
         log.info("分页查询员工信息，page={},pageSize={},name={}", page, pageSize, name);
 
         // 构造分页查询条件
-        Page pageInfo = new Page(page, pageSize);
+        Page<Employee> pageInfo = new Page<>(page, pageSize);
 
         // 构造条件查询条件
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
