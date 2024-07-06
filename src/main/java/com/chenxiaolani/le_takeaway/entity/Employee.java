@@ -3,6 +3,7 @@ package com.chenxiaolani.le_takeaway.entity;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -30,14 +31,16 @@ public class Employee implements Serializable {
 
     private Integer status;
 
+    @TableField(fill = FieldFill.INSERT) // 插入时自动更新字段
     private LocalDateTime createTime;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE) // 插入和更新时自动更新字段
     private LocalDateTime updateTime;
 
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(fill = FieldFill.INSERT) // 插入时自动更新字段
     private Long createUser;
 
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.INSERT_UPDATE) // 插入和更新时自动更新字段
     private Long updateUser;
 
 }

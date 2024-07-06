@@ -81,13 +81,13 @@ public class EmployeeController {
         // 设置初始密码
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
         // 设置创建时间和更新时间
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
         // 先从session里获取员工id，注意这里返回默认是Object类型，需要转型为Long
-        Long empId = (Long) request.getSession().getAttribute("employee");
+//        Long empId = (Long) request.getSession().getAttribute("employee");
         // 设置创建人和更新人
-        employee.setCreateUser(empId);
-        employee.setUpdateUser(empId);
+//        employee.setCreateUser(empId);
+//        employee.setUpdateUser(empId);
 
         // 因为employeeService继承了IService，所以可以直接调用save方法
         employeeService.save(employee);
@@ -130,11 +130,13 @@ public class EmployeeController {
     @PutMapping
     public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
         log.info("修改员工信息{}", employee.toString());
+
         // 注意这里需要修改更新时间，和更新人
-        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
         // 这个方法默认会返回一个Object的类型， 这里需要强转为Long
-        Long empId = (Long) request.getSession().getAttribute("employee");
-        employee.setUpdateUser(empId);
+//        Long empId = (Long) request.getSession().getAttribute("employee");
+//        employee.setUpdateUser(empId);
+
         // 这里直接调用updateById方法，mybatis plus会根据id自动更新
         employeeService.updateById(employee);
         return R.success("修改员工成功");

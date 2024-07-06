@@ -1,6 +1,7 @@
 package com.chenxiaolani.le_takeaway.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.chenxiaolani.le_takeaway.common.BaseContext;
 import com.chenxiaolani.le_takeaway.common.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.AntPathMatcher;
@@ -48,6 +49,10 @@ public class LoginCheckFilter implements Filter {
         if (employee != null) {
             // 已经登录，放行
             log.info("用户已经登录，ID为{}", employee);
+
+            // 将用户id存入ThreadLocal
+            BaseContext.setCurrentId((Long) employee);
+
             filterChain.doFilter(request, response);
             return;
         }
