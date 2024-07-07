@@ -31,4 +31,11 @@ public class GlobalExceptionHandler {
 
         return R.error("未知错误");
     }
+
+    @ExceptionHandler(CustomException.class)
+    public R<String> exceptionHandler(CustomException e) {
+        log.error("全局异常处理...", e.getMessage());
+
+        return R.error(e.getMessage());
+    }
 }
