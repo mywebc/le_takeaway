@@ -6,6 +6,7 @@ import com.chenxiaolani.le_takeaway.common.R;
 import com.chenxiaolani.le_takeaway.dto.DishDto;
 import com.chenxiaolani.le_takeaway.entity.Category;
 import com.chenxiaolani.le_takeaway.entity.Dish;
+import com.chenxiaolani.le_takeaway.entity.DishFlavor;
 import com.chenxiaolani.le_takeaway.service.CategoryService;
 import com.chenxiaolani.le_takeaway.service.DishFlavorService;
 import com.chenxiaolani.le_takeaway.service.DishService;
@@ -90,5 +91,11 @@ public class DishController {
         dishDtoPage.setRecords(list);
 
         return R.success(dishDtoPage);
+    }
+
+    @GetMapping("/{id}")
+    public R<DishDto> getById(@PathVariable Long id) {
+        DishDto dishDtoByIdWithFlavor = dishService.getByIdWithFlavor(id);
+        return R.success(dishDtoByIdWithFlavor);
     }
 }

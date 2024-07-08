@@ -1,12 +1,15 @@
 package com.chenxiaolani.le_takeaway.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chenxiaolani.le_takeaway.common.R;
 import com.chenxiaolani.le_takeaway.dto.DishDto;
 import com.chenxiaolani.le_takeaway.entity.Dish;
 import com.chenxiaolani.le_takeaway.entity.DishFlavor;
 import com.chenxiaolani.le_takeaway.mapper.DishMapper;
 import com.chenxiaolani.le_takeaway.service.DishFlavorService;
 import com.chenxiaolani.le_takeaway.service.DishService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,4 +43,23 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         // 批量保存
         dishFlavorService.saveBatch(flavors);
     }
+
+    // 根据id查询菜品，同时也要查询菜品口味数据
+    @Override
+    public DishDto getByIdWithFlavor(Long id) {
+        // 先查询菜品的基本信息
+        Dish dish = this.getById(id);
+
+        DishDto dishDto = new DishDto();
+        BeanUtils.copyProperties(dish, dishDto);
+
+        // 再查询当前菜品对应的口味数据
+        LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper();
+        dishFlavorLambdaQueryWrapper.eq(DishFlavor::getDishId, id);
+
+        List<DishFlavor> dishFlavors = dishFlavorService.list(dishFlavorLambdaQueryWrapper);
+        dishDto.setFlavors(dishFlavors);
+        return dishDto;
+    }
+
 }
