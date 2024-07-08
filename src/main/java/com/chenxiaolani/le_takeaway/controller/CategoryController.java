@@ -11,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 分类管理
  */
@@ -82,4 +84,21 @@ public class CategoryController {
         return R.success("更新成功");
     }
 
+    /**
+     * 查询分类列表
+     *
+     * @param category
+     * @return
+     */
+    @RequestMapping("/list")
+    public R<List<Category>> list(Category category) {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper();
+        // 添加查询条件
+        queryWrapper.eq(category.getType() != null, Category::getType, category.getType());
+        // 添加排序条件, 优先使用sort字段排序，如果sort相同，使用更新时间排序
+        queryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
+        // 执行查询
+        List<Category> list = categoryService.list(queryWrapper);
+        return R.success(list);
+    }
 }
