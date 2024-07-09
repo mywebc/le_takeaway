@@ -45,6 +45,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     }
 
     // 根据id查询菜品，同时也要查询菜品口味数据
+    @Transactional
     @Override
     public DishDto getByIdWithFlavor(Long id) {
         // 先查询菜品的基本信息
@@ -60,6 +61,25 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         List<DishFlavor> dishFlavors = dishFlavorService.list(dishFlavorLambdaQueryWrapper);
         dishDto.setFlavors(dishFlavors);
         return dishDto;
+    }
+
+    // 更新菜品，同时也要更新菜品口味数据，要更新两张表的数据，所以要在service层进行事务管理
+    @Override
+    public void updateWithFlavor(DishDto dishDto) {
+        // 首先更新dish的表
+        this.updateById(dishDto);
+
+        // 根据dish_id去删除dish_flavor表中的数据
+        LambdaQueryWrapper<DishFlavor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(DishFlavor::getDishId, dishDto.getId());
+        dishFlavorService.remove(lambdaQueryWrapper);
+
+        // 重新插入dish_flavor表中的数据
+        List<DishFlavor> flavors = dishDto.getFlavors();
+        flavors.forEach(flavor -> {
+            flavor.setDishId(dishDto.getId());
+        });
+        dishFlavorService.saveBatch(flavors);
     }
 
 }

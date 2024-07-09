@@ -11,4 +11,7 @@ public interface DishService extends IService<Dish> {
 
     // 根据id查询菜品，同时也要查询菜品口味数据
     public DishDto getByIdWithFlavor(Long id);
+
+    // 更新菜品，同时也要更新菜品口味数据，要更新两张表的数据，所以要在service层进行事务管理
+    public void  updateWithFlavor(DishDto dishDto);
 }

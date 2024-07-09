@@ -6,9 +6,7 @@ import com.chenxiaolani.le_takeaway.common.R;
 import com.chenxiaolani.le_takeaway.dto.DishDto;
 import com.chenxiaolani.le_takeaway.entity.Category;
 import com.chenxiaolani.le_takeaway.entity.Dish;
-import com.chenxiaolani.le_takeaway.entity.DishFlavor;
 import com.chenxiaolani.le_takeaway.service.CategoryService;
-import com.chenxiaolani.le_takeaway.service.DishFlavorService;
 import com.chenxiaolani.le_takeaway.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,8 +25,6 @@ import java.util.stream.Collectors;
 public class DishController {
     @Autowired
     private DishService dishService;
-    @Autowired
-    private DishFlavorService dishFlavorService;
     @Autowired
     private CategoryService categoryService;
 
@@ -97,5 +93,110 @@ public class DishController {
     public R<DishDto> getById(@PathVariable Long id) {
         DishDto dishDtoByIdWithFlavor = dishService.getByIdWithFlavor(id);
         return R.success(dishDtoByIdWithFlavor);
+    }
+
+
+    /**
+     * 修改菜品
+     *
+     * @param dishDto
+     * @return
+     */
+    @PutMapping
+    public R<String> update(@RequestBody DishDto dishDto) {
+        // 这里要向两个表里插入数据，所以要在service层进行事务管理
+        dishService.updateWithFlavor(dishDto);
+        return R.success("更新成功");
+    }
+
+    /**
+     * 删除菜品
+     *
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    public R<String> delete(String[] ids) {
+        log.info("删除的ids{}", ids);
+        if (ids == null || ids.length == 0) {
+            return R.error("删除失败，未提供要删除的ID");
+        }
+        for (String id : ids) {
+            boolean removed = dishService.removeById(id);
+            if (!removed) {
+                return R.error("删除失败id:" + id);
+            }
+        }
+        return R.success("删除成功");
+    }
+
+    /**
+     * 停售 0停售 1启售
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/0")
+    public R<String> stopSale(String[] ids) {
+        log.info("停售的ids{}", ids);
+        if (ids == null || ids.length == 0) {
+            return R.error("停售失败，未提供要停售的ID");
+        }
+        for (String id : ids) {
+            Dish dish = new Dish();
+            dish.setId(Long.valueOf(id));
+            dish.setStatus(0);
+            boolean updated = dishService.updateById(dish);
+            if (!updated) {
+                return R.error("停售失败id:" + id);
+            }
+        }
+        return R.success("停售成功");
+    }
+
+    /**
+     * 启售 0停售 1启售
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/1")
+    public R<String> startSale(String[] ids) {
+        log.info("启售的ids{}", ids);
+        if (ids == null || ids.length == 0) {
+            return R.error("启售失败，未提供要启售的ID");
+        }
+        for (String id : ids) {
+            Dish dish = new Dish();
+            dish.setId(Long.valueOf(id));
+            dish.setStatus(1);
+            boolean updated = dishService.updateById(dish);
+            if (!updated) {
+                return R.error("启售失败id:" + id);
+            }
+        }
+        return R.success("启售成功");
+    }
+
+    /**
+     * 根据分类id查询菜品列表
+     * 使用dish对象接收参数，方便后期还可以接受其他参数
+     *
+     * @param dish
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Dish>> getDishByCategoryId(Dish dish) {
+        log.info("根据分类id查询菜品列表，categoryId:{}", dish.toString());
+        LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper();
+        // 添加查询条件
+        lambdaQueryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        // 查找status=1的菜品
+        lambdaQueryWrapper.eq(Dish::getStatus, 1);
+        // 添加排序条件
+        lambdaQueryWrapper.orderByAsc(Dish::getSort).orderByAsc(Dish::getUpdateTime);
+        // 执行查询
+        List<Dish> list = dishService.list(lambdaQueryWrapper);
+        return R.success(list);
     }
 }
