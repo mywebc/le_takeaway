@@ -116,17 +116,9 @@ public class DishController {
      * @return
      */
     @DeleteMapping
-    public R<String> delete(String[] ids) {
+    public R<String> delete(@RequestParam List<Long> ids) {
         log.info("删除的ids{}", ids);
-        if (ids == null || ids.length == 0) {
-            return R.error("删除失败，未提供要删除的ID");
-        }
-        for (String id : ids) {
-            boolean removed = dishService.removeById(id);
-            if (!removed) {
-                return R.error("删除失败id:" + id);
-            }
-        }
+        dishService.deleteWithFlavor(ids);
         return R.success("删除成功");
     }
 

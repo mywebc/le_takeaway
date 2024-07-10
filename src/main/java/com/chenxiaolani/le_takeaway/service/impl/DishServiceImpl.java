@@ -2,7 +2,7 @@ package com.chenxiaolani.le_takeaway.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chenxiaolani.le_takeaway.common.R;
+import com.chenxiaolani.le_takeaway.common.CustomException;
 import com.chenxiaolani.le_takeaway.dto.DishDto;
 import com.chenxiaolani.le_takeaway.entity.Dish;
 import com.chenxiaolani.le_takeaway.entity.DishFlavor;
@@ -82,4 +82,25 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         dishFlavorService.saveBatch(flavors);
     }
 
+    // 删除菜品，同时也要删除菜品口味数据
+    @Override
+    public void deleteWithFlavor(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new CustomException("删除失败，未提供要删除的ID");
+        }
+        // select count(*) from dish where id in (1,2,3) and status = 1
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Dish::getId, ids);
+        queryWrapper.eq(Dish::getStatus, 1);
+        int count = this.count(queryWrapper);
+        if (count > 0) {
+            throw new CustomException("删除失败，有菜品已经上架，无法删除");
+        }
+        // 如果没有菜品上架，删除菜品
+        this.removeByIds(ids);
+        // 删除菜品和口味的关系
+        LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        dishFlavorLambdaQueryWrapper.in(DishFlavor::getDishId, ids);
+        dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
+    }
 }
