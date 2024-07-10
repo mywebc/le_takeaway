@@ -89,6 +89,12 @@ public class DishController {
         return R.success(dishDtoPage);
     }
 
+    /**
+     * 根据id查询菜品
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}")
     public R<DishDto> getById(@PathVariable Long id) {
         DishDto dishDtoByIdWithFlavor = dishService.getByIdWithFlavor(id);
@@ -123,52 +129,31 @@ public class DishController {
     }
 
     /**
-     * 停售 0停售 1启售
+     * 更新售卖状态
      *
-     * @param ids
+     * @param ids    需要更新状态的ID数组
+     * @param status 要更新的状态值（0：停售，1：启售）
      * @return
      */
-    @PostMapping("/status/0")
-    public R<String> stopSale(String[] ids) {
-        log.info("停售的ids{}", ids);
-        if (ids == null || ids.length == 0) {
-            return R.error("停售失败，未提供要停售的ID");
+    @PostMapping("/status/{status}")
+    public R<String> updateSaleStatus(@PathVariable int status, @RequestParam List<Long> ids) {
+        log.info("更新状态为{}的ids{}", status, ids);
+        if (ids == null || ids.isEmpty()) {
+            return R.error("更新失败，未提供要更新的ID");
         }
-        for (String id : ids) {
+        for (Long id : ids) {
             Dish dish = new Dish();
             dish.setId(Long.valueOf(id));
-            dish.setStatus(0);
+            dish.setStatus(status);
             boolean updated = dishService.updateById(dish);
             if (!updated) {
-                return R.error("停售失败id:" + id);
+                return R.error("更新失败id:" + id);
             }
         }
-        return R.success("停售成功");
+        String action = status == 1 ? "启售" : "停售";
+        return R.success(action + "成功");
     }
 
-    /**
-     * 启售 0停售 1启售
-     *
-     * @param ids
-     * @return
-     */
-    @PostMapping("/status/1")
-    public R<String> startSale(String[] ids) {
-        log.info("启售的ids{}", ids);
-        if (ids == null || ids.length == 0) {
-            return R.error("启售失败，未提供要启售的ID");
-        }
-        for (String id : ids) {
-            Dish dish = new Dish();
-            dish.setId(Long.valueOf(id));
-            dish.setStatus(1);
-            boolean updated = dishService.updateById(dish);
-            if (!updated) {
-                return R.error("启售失败id:" + id);
-            }
-        }
-        return R.success("启售成功");
-    }
 
     /**
      * 根据分类id查询菜品列表

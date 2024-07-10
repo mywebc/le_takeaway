@@ -98,4 +98,57 @@ public class SetmealController {
         return R.success("删除成功");
     }
 
+    /**
+     * 根据id查询套餐
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<SetmealDto> getById(@PathVariable Long id) {
+        log.info("查询套餐{}", id);
+        SetmealDto byIdWithDish = setmealService.getByIdWithDish(id);
+        return R.success(byIdWithDish);
+    }
+
+
+    /**
+     * 更新套餐
+     *
+     * @param setmealDto
+     * @return
+     */
+    @PutMapping
+    public R<String> update(@RequestBody SetmealDto setmealDto) {
+        log.info("更新套餐{}", setmealDto.toString());
+        // 先更新套餐的基本信息， 然后更新套餐和菜品的关系，所以放到service层进行事务管理
+        setmealService.updateWithDish(setmealDto);
+        return R.success("更新成功");
+    }
+
+    /**
+     * 更新售卖状态
+     *
+     * @param ids    需要更新状态的ID数组
+     * @param status 要更新的状态值（0：停售，1：启售）
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    public R<String> updateSaleStatus(@PathVariable int status, @RequestParam List<Long> ids) {
+        log.info("更新状态为{}的ids{}", status, ids);
+        if (ids == null || ids.isEmpty()) {
+            return R.error("更新失败，未提供要更新的ID");
+        }
+        for (Long id : ids) {
+            Setmeal setmeal = new Setmeal();
+            setmeal.setId(Long.valueOf(id));
+            setmeal.setStatus(status);
+            boolean updated = setmealService.updateById(setmeal);
+            if (!updated) {
+                return R.error("更新失败id:" + id);
+            }
+        }
+        String action = status == 1 ? "启售" : "停售";
+        return R.success(action + "成功");
+    }
 }

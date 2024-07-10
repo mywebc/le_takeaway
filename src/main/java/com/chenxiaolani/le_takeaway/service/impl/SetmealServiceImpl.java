@@ -9,6 +9,7 @@ import com.chenxiaolani.le_takeaway.entity.SetmealDish;
 import com.chenxiaolani.le_takeaway.mapper.SetmealMapper;
 import com.chenxiaolani.le_takeaway.service.SetmealDishService;
 import com.chenxiaolani.le_takeaway.service.SetmealService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
     @Autowired
     private SetmealDishService setmealDishService;
 
+    // 新增套餐，保存套餐和菜品的关系
     @Override
     @Transactional
     public void saveWithDish(SetmealDto setmealDto) {
@@ -57,5 +59,49 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         LambdaQueryWrapper<SetmealDish> setmealDishLambdaQueryWrapper = new LambdaQueryWrapper();
         setmealDishLambdaQueryWrapper.in(SetmealDish::getSetmealId, ids);
         setmealDishService.remove(setmealDishLambdaQueryWrapper);
+    }
+
+    // 根据套餐id查询套餐，同时查询套餐和菜品的关系
+    @Override
+    @Transactional
+    public SetmealDto getByIdWithDish(Long id) {
+        // 查询套餐的基本信息
+        Setmeal setmeal = this.getById(id);
+        if (setmeal == null) {
+            throw new CustomException("套餐不存在");
+        }
+        // 把查到的setmeal转换成dto
+        SetmealDto setmealDto = new SetmealDto();
+        BeanUtils.copyProperties(setmeal, setmealDto);
+
+        // 再查询套餐和菜品的关系, 根据setmeal_id查询setmeal_dish表
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SetmealDish::getSetmealId, id);
+        List<SetmealDish> setmealDishes = setmealDishService.list(queryWrapper);
+
+        // 把查到的setmealDishes设置到setmealDto里
+        setmealDto.setSetmealDishes(setmealDishes);
+        return setmealDto;
+    }
+
+    // 更新套餐，同时更新套餐和菜品的关系
+    @Override
+    public void updateWithDish(SetmealDto setmealDto) {
+        // 更新套餐的基本信息
+        this.updateById(setmealDto);
+
+        // 先删除原来的套餐和菜品的关系
+        // delete from setmeal_dish where setmeal_id = 1
+        LambdaQueryWrapper<SetmealDish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SetmealDish::getSetmealId, setmealDto.getId());
+        setmealDishService.remove(lambdaQueryWrapper);
+
+        // 再插入新的套餐和菜品的关系
+        List<SetmealDish> setmealDishes = setmealDto.getSetmealDishes();
+        setmealDishes.forEach(setmealDish -> {
+            setmealDish.setSetmealId(setmealDto.getId());
+        });
+
+        setmealDishService.saveBatch(setmealDishes);
     }
 }
