@@ -6,7 +6,9 @@ import com.chenxiaolani.le_takeaway.common.R;
 import com.chenxiaolani.le_takeaway.dto.DishDto;
 import com.chenxiaolani.le_takeaway.entity.Category;
 import com.chenxiaolani.le_takeaway.entity.Dish;
+import com.chenxiaolani.le_takeaway.entity.DishFlavor;
 import com.chenxiaolani.le_takeaway.service.CategoryService;
+import com.chenxiaolani.le_takeaway.service.DishFlavorService;
 import com.chenxiaolani.le_takeaway.service.DishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +29,8 @@ public class DishController {
     private DishService dishService;
     @Autowired
     private CategoryService categoryService;
+    @Autowired
+    private DishFlavorService dishFlavorService;
 
     /**
      * 新增菜品, 这里的参数是一个DTO，DTO是一个数据传输对象，用于前后端传输数据
@@ -159,21 +163,36 @@ public class DishController {
      * 根据分类id查询菜品列表
      * 使用dish对象接收参数，方便后期还可以接受其他参数
      *
-     * @param dish
+     * @param dishDto
      * @return
      */
     @GetMapping("/list")
-    public R<List<Dish>> getDishByCategoryId(Dish dish) {
-        log.info("根据分类id查询菜品列表，categoryId:{}", dish.toString());
+    public R<List<DishDto>> getDishByCategoryId(DishDto dishDto) {
+        log.info("根据分类id查询菜品列表，categoryId:{}", dishDto.toString());
         LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper();
         // 添加查询条件
-        lambdaQueryWrapper.eq(dish.getCategoryId() != null, Dish::getCategoryId, dish.getCategoryId());
+        lambdaQueryWrapper.eq(dishDto.getCategoryId() != null, Dish::getCategoryId, dishDto.getCategoryId());
         // 查找status=1的菜品
         lambdaQueryWrapper.eq(Dish::getStatus, 1);
         // 添加排序条件
         lambdaQueryWrapper.orderByAsc(Dish::getSort).orderByAsc(Dish::getUpdateTime);
         // 执行查询
         List<Dish> list = dishService.list(lambdaQueryWrapper);
-        return R.success(list);
+
+        // 需要在这个返回的list里面加入一个dto,里面包含了查好的flavors
+        List<DishDto> dishDtoList = list.stream().map(dish -> {
+            DishDto dishDto1 = new DishDto();
+            BeanUtils.copyProperties(dish, dishDto1);
+
+            // 菜品id
+            Long dishId = dish.getId();
+            // 根据菜品id去查找菜品的口味，查dishFlavor表
+            List<DishFlavor> dishFlavors = dishFlavorService.list(new LambdaQueryWrapper<DishFlavor>().eq(DishFlavor::getDishId, dishId));
+            dishDto1.setFlavors(dishFlavors);
+            return dishDto1;
+        }).collect(Collectors.toList());
+
+
+        return R.success(dishDtoList);
     }
 }

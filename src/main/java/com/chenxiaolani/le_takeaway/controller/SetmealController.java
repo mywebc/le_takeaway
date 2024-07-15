@@ -145,11 +145,6 @@ public class SetmealController {
             setmeal.setStatus(status);
 
 
-
-
-
-
-
             boolean updated = setmealService.updateById(setmeal);
             if (!updated) {
                 return R.error("更新失败id:" + id);
@@ -157,5 +152,27 @@ public class SetmealController {
         }
         String action = status == 1 ? "启售" : "停售";
         return R.success(action + "成功");
+    }
+
+
+    /**
+     * 根据category_id和status查询对应套餐
+     *
+     * @param setmeal
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List<Setmeal>> list(Setmeal setmeal) {
+        LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(setmeal.getCategoryId() != null, Setmeal::getCategoryId, setmeal.getCategoryId());
+        // 如果status不为空，就加上status的查询条件
+        queryWrapper.eq(setmeal.getStatus() != null, Setmeal::getStatus, setmeal.getStatus());
+        // 添加排序
+        queryWrapper.orderByDesc(Setmeal::getUpdateTime);
+        List<Setmeal> list = setmealService.list(queryWrapper);
+        if (list != null) {
+            return R.success(list);
+        }
+        return R.error("没有找到该对象");
     }
 }
