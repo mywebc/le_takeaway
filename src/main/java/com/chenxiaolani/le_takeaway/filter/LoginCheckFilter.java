@@ -35,7 +35,7 @@ public class LoginCheckFilter implements Filter {
         log.info("本次拦截的请求...{}", url);
 
         // 不需要登录的url
-        String[] urls = new String[]{"/employee/login", "/employee/logout", "/backend/**", "/front/**",};
+        String[] urls = new String[]{"/employee/login", "/employee/logout", "/backend/**", "/front/**", "/user/sendMsg", "/user/login", "/user/logout"};
 
         boolean match = check(urls, url);
         // 如果是不需要登录的页面，直接放行
@@ -44,7 +44,7 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
-        // 如果是其他页面，判断是否登录
+        // 如果是其他页面，判断是否登录 (桌面端)
         Object employee = request.getSession().getAttribute("employee");
         if (employee != null) {
             // 已经登录，放行
@@ -56,6 +56,20 @@ public class LoginCheckFilter implements Filter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 如果是其他页面，判断是否登录 （移动端）
+        Object user = request.getSession().getAttribute("user");
+        if (user != null) {
+            // 已经登录，放行
+            log.info("用户已经登录，ID为{}", user);
+
+            // 将用户id存入ThreadLocal
+            BaseContext.setCurrentId((Long) user);
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         log.info("用户未登录");
         // 通过输出流的方式返回json数据
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));

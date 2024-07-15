@@ -143,6 +143,13 @@ public class SetmealController {
             Setmeal setmeal = new Setmeal();
             setmeal.setId(Long.valueOf(id));
             setmeal.setStatus(status);
+
+
+
+
+
+
+
             boolean updated = setmealService.updateById(setmeal);
             if (!updated) {
                 return R.error("更新失败id:" + id);
