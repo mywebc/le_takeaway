@@ -93,8 +93,8 @@
           <div class="divContent">
             <div v-for="flavor in dialogFlavor.flavors" :key="flavor.id">
                 <div class="divFlavorTitle">{{flavor.name}}</div>
-                <span v-for="item in JSON.parse(flavor.value)" 
-                :key="item"  
+                <span v-for="item in JSON.parse(flavor.value)"
+                :key="item"
                 @click="flavorClick(flavor,item)"
                 :class="{spanActive:flavor.dishFlavor === item}"
                 >{{item}}</span>
@@ -108,6 +108,7 @@
             <img src="./images/close.png"/>
           </div>
         </van-dialog>
+        <!--  打开购物车    -->
         <van-popup v-model="cartDialogShow" position="bottom" :style="{ height: '50%' }" class="dialogCart">
           <div class="divCartTitle">
             <div class="title">购物车</div>
@@ -131,7 +132,7 @@
                 <div class="divSubtract">
                   <img src="./images/subtract.png" @click="cartNumberSubtract(item)"/>
                 </div>
-                <div class="divDishNum">{{item.number}}</div>
+                <div class="divDishNum" :style="{fontSize: '16px'}">{{item.number}}</div>
                 <div class="divAdd">
                   <img src="./images/add.png" @click="cartNumAdd(item)"/>
                 </div>
@@ -140,9 +141,9 @@
               </div>
           </div>
         </van-popup>
-        <van-dialog v-model="detailsDialog.show" 
-                    :show-confirm-button="false" 
-                    class="detailsDialog" 
+        <van-dialog v-model="detailsDialog.show"
+                    :show-confirm-button="false"
+                    class="detailsDialog"
                     ref="detailsDialog"
                     v-if="detailsDialog.show"
                     >
@@ -174,9 +175,9 @@
             <img src="./images/close.png"/>
           </div>
         </van-dialog>
-        <van-dialog v-model="setMealDialog.show" 
-                    :show-confirm-button="false" 
-                    class="setMealDetailsDialog" 
+        <van-dialog v-model="setMealDialog.show"
+                    :show-confirm-button="false"
+                    class="setMealDetailsDialog"
                     ref="setMealDetailsDialogd"
                     v-if="setMealDialog.show"
                     >
@@ -192,7 +193,7 @@
                   <div class="divPrice">
                     <span>￥</span><span>{{item.price/100}}</span>
                   </div>
-                </div>                
+                </div>
                 <div class="content">{{item.description}}</div>
               </div>
             </div>
@@ -221,7 +222,7 @@
         <!-- 引入组件库 -->
         <script src="../backend/plugins/element-ui/index.js"></script>
         <!-- 引入vant样式 -->
-        <script src="./js/vant.min.js"></script>        
+        <script src="./js/vant.min.js"></script>
         <!-- 引入axios -->
         <script src="../backend/plugins/axios/axios.min.js"></script>
         <script src="./js/request.js"></script>
@@ -262,7 +263,7 @@
             goodsNum(){
               let num = 0
               this.cartData.forEach(item=>{
-                num += item.number 
+                num += item.number
               })
               if(num <99){
                 return num
@@ -313,6 +314,7 @@
                 //获取菜品数据
                 if(res[1].code === 1){
                 this.cartData = res[1].data
+                  console.log("cartData",this.cartData)
                 }else{
                   this.$notify({ type:'warning', message:res[1].msg});
                 }
@@ -439,7 +441,7 @@
                   this.$notify({ type:'warning', message:res.msg});
                 }
             },
-            
+
             //展开购物车
             openCart(){
               if(this.cartData.length > 0){
@@ -487,7 +489,7 @@
                   this.$notify({ type:'warning', message:res.msg});
                 }
             },
-            
+
             //修改商品列表中的数据number
             changeDishList(item){
               for(let ele of this.dishList){
@@ -496,7 +498,7 @@
                 }
               }
             },
-            
+
             //清空购物车
             async clearCart(){
                 const res = await clearCartApi()
@@ -558,7 +560,7 @@
                 })
                 this.dialogFlavor.show = false
               }
-              
+
             },
             //网络图片路径转换
             imgPathConvert(path){
