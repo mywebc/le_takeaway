@@ -81,4 +81,56 @@ public class ShoppingCartController {
         List<ShoppingCart> list = shoppingCartService.list(queryWrapper);
         return R.success(list);
     }
+
+    /**
+     * 清空购物车
+     *
+     * @return
+     */
+    @DeleteMapping("/clean")
+    public R<String> clean() {
+        log.info("清空购物车");
+        // 根据userId删除购物车
+        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ShoppingCart::getUserId, BaseContext.getCurrentId());
+        shoppingCartService.remove(queryWrapper);
+        return R.success("清空购物车成功");
+    }
+
+    /**
+     * 减少购物车
+     *
+     * @param shoppingCart
+     * @return
+     */
+    @PostMapping("/sub")
+    public R<String> sub(@RequestBody ShoppingCart shoppingCart) {
+        log.info("减少购物车:{}", shoppingCart);
+        Long userId = BaseContext.getCurrentId();
+
+        LambdaQueryWrapper<ShoppingCart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ShoppingCart::getUserId, userId);
+
+        // 区分到底是菜品还是套餐
+        Long dishId = shoppingCart.getDishId();
+        if (dishId != null) {
+            // 说明是菜品，设置dishId
+            queryWrapper.eq(ShoppingCart::getDishId, shoppingCart.getDishId());
+        } else {
+            // 说明是套餐,设置setmealId
+            queryWrapper.eq(ShoppingCart::getSetmealId, shoppingCart.getSetmealId());
+        }
+        ShoppingCart cart = shoppingCartService.getOne(queryWrapper);
+        if (cart != null) {
+            // 说明购物车中已经有这个菜品了，数量-1
+            cart.setNumber(cart.getNumber() - 1);
+            if (cart.getNumber() == 0) {
+                // 如果数量为0，直接删除
+                shoppingCartService.removeById(cart.getId());
+            } else {
+                shoppingCartService.updateById(cart);
+            }
+        }
+        return R.success("减少购物车成功");
+    }
 }
