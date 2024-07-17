@@ -3,12 +3,44 @@ server:
 spring:
   application:
     name: le_takeaway
-  datasource:
-    druid:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://localhost:3306/le_takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-      username: root
-      password: 123456
+  shardingsphere:
+    datasource:
+      names: master, slave
+      #主数据源
+      master:
+          type: com.alibaba.druid.pool.DruidDataSource
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.138.100:3306/le_takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+          username: root
+          password: 123456
+      #从数据源
+      slave:
+          type: com.alibaba.druid.pool.DruidDataSource
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: jdbc:mysql://192.168.138.101:3306/le_takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+          username: root
+          password: 123456
+      masterslave:
+        #读写分离配置
+        load-balance-algorithm-type: round_robin #轮询
+        #最终的数据源名称
+        name: dataSource
+        #主数据源名称
+        master-data-source-name: master
+        #从数据源名称
+        slave-data-source-names: slave
+      props:
+        #打印sql
+        sql:
+          show: true
+    main:
+        allow-bean-definition-overriding: true #允许覆盖bean
+#  datasource:
+#    druid:
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/le_takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+#      username: root
+#      password: 123456
   #redis配置
   redis:
     host: localhost
