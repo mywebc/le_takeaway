@@ -9,6 +9,10 @@ import com.chenxiaolani.le_takeaway.entity.Setmeal;
 import com.chenxiaolani.le_takeaway.service.CategoryService;
 import com.chenxiaolani.le_takeaway.service.SetmealDishService;
 import com.chenxiaolani.le_takeaway.service.SetmealService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/setmeal")
+@Api(tags = "套餐相关接口")
 public class SetmealController {
     @Autowired
     private SetmealService setmealService;
@@ -38,6 +43,10 @@ public class SetmealController {
      */
     @PostMapping
     @CacheEvict(value = "setmealCache", allEntries = true) // 删除setmealCache下的所有缓存
+    @ApiOperation(value = "新增套餐")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "setmealDto", value = "套餐对象", required = true, dataType = "SetmealDto")
+    })
     public R<String> add(@RequestBody SetmealDto setmealDto) {
         log.info("新增套餐{}", setmealDto.toString());
         setmealService.saveWithDish(setmealDto);

@@ -35,7 +35,20 @@ public class LoginCheckFilter implements Filter {
         log.info("本次拦截的请求...{}", url);
 
         // 不需要登录的url
-        String[] urls = new String[]{"/employee/login", "/employee/logout", "/backend/**", "/front/**", "/user/sendMsg", "/user/login", "/user/logout"};
+        String[] urls = new String[]{
+                "/employee/login",
+                "/employee/logout",
+                "/backend/**",
+                "/front/**",
+                "/user/sendMsg",
+                "/user/login",
+                "/user/logout",
+                // swagger相关
+                "/doc.html",
+                "/webjars/**",
+                "/swagger-resources",
+                "/v2/api-docs"
+        };
 
         boolean match = check(urls, url);
         // 如果是不需要登录的页面，直接放行

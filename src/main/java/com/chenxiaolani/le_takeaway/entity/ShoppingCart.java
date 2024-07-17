@@ -1,7 +1,6 @@
 package com.chenxiaolani.le_takeaway.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -12,6 +11,7 @@ import java.time.LocalDateTime;
  * 购物车
  */
 @Data
+@ApiModel("购物车")
 public class ShoppingCart implements Serializable {
 
     private static final long serialVersionUID = 1L;
