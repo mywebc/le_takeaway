@@ -29,6 +29,7 @@ mybatis-plus:
       id-type: ASSIGN_ID
 
 le_takeaway:
+  #这里部署到服务器后，就要修改路径了，这里是本地路径，部署到服务器后，要修改为服务器路径
   path: /Users/chenxiaole/learnTrain/javaProjects/tmp/
 
 
